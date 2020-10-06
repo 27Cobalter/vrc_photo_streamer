@@ -3,31 +3,33 @@
 
 #include <gst/gst.h>
 #include <gst/rtsp-server/rtsp-server.h>
-#include <opencv2/core/hal/interface.h>
+#include <opencv2/core/core.hpp>
+#include <opencv2/imgproc.hpp>
 
 #include "rtsp_server.h"
 
 namespace vrc_photo_streamer::rtsp {
 
-uchar* rtsp_server::frame_;
+cv::Mat rtsp_server::frame_;
 guint rtsp_server::size_;
 
 void rtsp_server::need_data(GstElement* appsrc, guint unused, context* ctx) {
   GstBuffer* buffer;
   GstFlowReturn ret;
 
+  cv::Mat image = frame_.clone();
+  auto now      = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
+  cv::putText(image, std::ctime(&now), cv::Point(0, 60), cv::FONT_HERSHEY_SIMPLEX, 2.5,
+              cv::Scalar(255, 255, 0), 3);
+  std::cout << std::ctime(&now) << std::endl;
+
   // imageのデータをgstのバッファに書き込む
   buffer = gst_buffer_new_allocate(nullptr, size_, nullptr);
-  gst_buffer_fill(buffer, 0, frame_, size_);
+  gst_buffer_fill(buffer, 0, image.data, size_);
 
   GST_BUFFER_PTS(buffer)      = ctx->timestamp;
   GST_BUFFER_DURATION(buffer) = gst_util_uint64_scale_int(1, GST_SECOND, 5);
   ctx->timestamp += GST_BUFFER_DURATION(buffer);
-
-  // auto end = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-  // std::cout << "Time: " << std::chrono::milliseconds(end - now).count() << ", " <<
-  // ctime(&end)
-  //           << std::endl;
 
   g_signal_emit_by_name(appsrc, "push-buffer", buffer, &ret);
   gst_buffer_unref(buffer);
@@ -59,7 +61,7 @@ void rtsp_server::media_configure(GstRTSPMediaFactory* factory, GstRTSPMedia* me
   gst_object_unref(appsrc);
   gst_object_unref(element);
 }
-void rtsp_server::initialize(int argc, char** argv, uchar* frame, guint size) {
+void rtsp_server::initialize(int argc, char** argv, cv::Mat& frame, guint size) {
   frame_ = frame;
   size_  = size;
 
@@ -78,7 +80,8 @@ void rtsp_server::initialize(int argc, char** argv, uchar* frame, guint size) {
       this->factory,
       "( appsrc name=vrc_photo_streamer is-live=true format=GST_FORMAT_TIME ! videoconvert ! "
       "x264enc "
-      "bitrate=16384 key-int-max=1 speed-preset=ultrafast tune=zerolatency ! "
+      //"bitrate=16384 key-int-max=1 speed-preset=ultrafast tune=zerolatency ! "
+      "bitrate=8192 key-int-max=1 speed-preset=ultrafast tune=zerolatency ! "
       "video/x-h264,profile=baseline ! rtph264pay config-interval=1 name=pay0 pt=98 )");
 
   g_signal_connect(this->factory, "media-configure", (GCallback)media_configure, nullptr);

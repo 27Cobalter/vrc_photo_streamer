@@ -9,18 +9,24 @@
 #include <opencv2/core/mat.hpp>
 
 namespace vrc_photo_streamer::photo {
+typedef struct {
+  int begin;
+  int tiling;
+} page_format;
+
 class photo_album {
 public:
-  void test();
-  void update();
+  void update(page_format format);
+  int find_images();
   cv::Mat& get_frame();
 
 private:
   std::mutex mutex_;
   static constexpr char resources_dir[] = "resources";
+  std::set<std::filesystem::path> resource_paths;
+  int cols = 1920;
+  int rows = 1080;
 
-  int page = 0;
-  std::optional<int> select = std::nullopt;
   cv::Mat output_frame;
 };
 } // namespace vrc_photo_streamer::photo
