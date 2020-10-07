@@ -24,14 +24,18 @@ int photo_album::find_images() {
     }
   }
 
+  // 新しい写真から表示していきたいのでrbegin, rendを使う
+  // for(auto it = resource_paths_.rbegin();it!= resource_paths_.rend();it++)
+  //   std::cout << *it << std::endl;
+
   return resource_paths_.size();
 }
 
 void photo_album::update(page_format format) {
   cv::Mat working  = cv::Mat::zeros(rows_, cols_, CV_8UC3);
-  auto resource_it = resource_paths_.begin();
+  auto resource_it = resource_paths_.rbegin();
   for (int i = 0; i < format.begin; i++) resource_it++;
-  for (int i = 0; i < std::pow(format.tiling, 2) && resource_it != resource_paths_.end();
+  for (int i = 0; i < std::pow(format.tiling, 2) && resource_it != resource_paths_.rend();
        i++, resource_it++) {
     cv::Mat image  = cv::imread(*resource_it);
     double tiling  = 1.0 / format.tiling;
