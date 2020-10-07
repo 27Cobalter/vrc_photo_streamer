@@ -3,6 +3,7 @@
 - 画像をrtspで流してVRCでアルバムとして見るやつ
 
 ## 必要なライブラリ
+- boost
 - opencv4
 - gstreamer
 - gst-plugins-base
@@ -14,7 +15,7 @@
 ## ビルド&実行
 ```sh
 $ mkdir build && cd $_
-$ cmake .. -G ninja
+$ cmake .. -G ninja -DCMAKE_EXPORT_COMPILE_COMMANDS=1
 $ ninja
 $ ./bin/vrc_photo_streamer
 ```
