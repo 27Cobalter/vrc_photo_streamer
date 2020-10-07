@@ -11,12 +11,14 @@
 #include "photo_album.h"
 
 namespace vrc_photo_streamer::photo {
+
 int photo_album::find_images() {
   if (!filesystem::is_directory(resources_dir_)) {
     throw std::runtime_error(std::string(resources_dir_) + " is not directory.");
   }
 
   resource_paths_.clear();
+
   for (const filesystem::directory_entry& x : filesystem::directory_iterator(resources_dir_)) {
     std::string path(x.path());
     if (path.substr(path.length() - 3) == "png") {
@@ -31,16 +33,18 @@ int photo_album::find_images() {
   return resource_paths_.size();
 }
 
-void photo_album::update(page_format format) {
+void photo_album::update(page_data format) {
   cv::Mat working  = cv::Mat::zeros(rows_, cols_, CV_8UC3);
   auto resource_it = resource_paths_.rbegin();
-  for (int i = 0; i < format.begin; i++) resource_it++;
+
+  for (int i = 0; i < format.start; i++) resource_it++;
   for (int i = 0; i < std::pow(format.tiling, 2) && resource_it != resource_paths_.rend();
        i++, resource_it++) {
-    cv::Mat image  = cv::imread(*resource_it);
-    double tiling  = 1.0 / format.tiling;
-    int tx         = (i % format.tiling) * cols_ / format.tiling;
-    int ty         = (i / format.tiling) * rows_ / format.tiling;
+    cv::Mat image = cv::imread(*resource_it);
+    double tiling = 1.0 / format.tiling;
+    int tx        = (i % format.tiling) * cols_ / format.tiling;
+    int ty        = (i / format.tiling) * rows_ / format.tiling;
+
     cv::Mat affine = (cv::Mat_<double>(2, 3) << tiling, 0, tx, 0, tiling, ty);
     cv::warpAffine(image, working, affine, working.size(), cv::INTER_LINEAR,
                    cv::BORDER_TRANSPARENT);
@@ -50,6 +54,7 @@ void photo_album::update(page_format format) {
 
   output_frame_ = working.clone();
 }
+
 cv::Mat& photo_album::get_frame() {
   std::lock_guard<std::mutex> lock(mutex_);
   return output_frame_;

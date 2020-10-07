@@ -5,6 +5,7 @@
 
 #include "http_server.h"
 #include "photo_album.h"
+#include "photo_controller.h"
 #include "rtsp_server.h"
 
 int main(int argc, char** argv) {
@@ -13,17 +14,14 @@ int main(int argc, char** argv) {
   http::http_server http_server;
   std::thread hs([&http_server] { http_server.run(); });
 
-  photo::photo_album album;
-  album.find_images();
-  album.update({0, 4});
-  cv::Mat frame = album.get_frame();
-
   rtsp::rtsp_server rtsp_server;
+  cv::Mat& frame = controller::photo_controller::get_frame();
   rtsp_server.initialize(argc, argv, frame, frame.total() * frame.channels());
 
   std::thread rs([&rtsp_server] { rtsp_server.run(); });
 
   hs.join();
   rs.join();
+
   return 0;
 }

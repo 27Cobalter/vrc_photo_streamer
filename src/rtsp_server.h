@@ -3,10 +3,12 @@
 
 #include <gst/gst.h>
 #include <gst/rtsp-server/rtsp-server.h>
+
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc.hpp>
 
 namespace vrc_photo_streamer::rtsp {
+
 namespace chrono = std::chrono;
 typedef struct {
   GstClockTime timestamp;
@@ -21,12 +23,11 @@ public:
   void run();
 
 private:
-  static cv::Mat frame_;
+  static cv::Mat* frame_;
   static guint size_;
   GMainLoop* loop_;
   GstRTSPServer* server_;
   GstRTSPMediaFactory* factory_;
 };
 } // namespace vrc_photo_streamer::rtsp
-
 #endif

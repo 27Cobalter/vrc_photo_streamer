@@ -10,14 +10,14 @@
 
 namespace vrc_photo_streamer::rtsp {
 
-cv::Mat rtsp_server::frame_;
+cv::Mat* rtsp_server::frame_ = nullptr;
 guint rtsp_server::size_;
 
 void rtsp_server::need_data(GstElement* appsrc, guint unused, context* ctx) {
   GstBuffer* buffer;
   GstFlowReturn ret;
 
-  cv::Mat image = frame_.clone();
+  cv::Mat image = frame_->clone();
   auto now      = chrono::system_clock::to_time_t(chrono::system_clock::now());
   cv::putText(image, std::ctime(&now), cv::Point(0, 60), cv::FONT_HERSHEY_SIMPLEX, 2.5,
               cv::Scalar(255, 255, 0), 3);
@@ -61,8 +61,9 @@ void rtsp_server::media_configure(GstRTSPMediaFactory* factory, GstRTSPMedia* me
   gst_object_unref(appsrc);
   gst_object_unref(element);
 }
+
 void rtsp_server::initialize(int argc, char** argv, cv::Mat& frame, guint size) {
-  frame_ = frame;
+  frame_ = &frame;
   size_  = size;
 
   GstRTSPMountPoints* mounts;
@@ -92,9 +93,9 @@ void rtsp_server::initialize(int argc, char** argv, cv::Mat& frame, guint size) 
 
   gst_rtsp_server_attach(server_, nullptr);
 }
+
 void rtsp_server::run() {
   g_print("stream ready at rtsp://127.0.0.1:8554/test\n");
   g_main_loop_run(loop_);
 }
-
 } // namespace vrc_photo_streamer::rtsp

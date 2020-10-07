@@ -8,16 +8,18 @@
 #include <opencv2/core/mat.hpp>
 
 namespace vrc_photo_streamer::photo {
+
 namespace filesystem = std::filesystem;
+
 typedef struct {
-  int begin;
+  int start;
   int tiling;
-} page_format;
+} page_data;
 
 class photo_album {
 public:
-  void update(page_format format);
   int find_images();
+  void update(page_data format);
   cv::Mat& get_frame();
 
 private:

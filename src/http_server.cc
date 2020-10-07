@@ -3,6 +3,7 @@
 #include <ctime>
 #include <iostream>
 #include <memory>
+#include <optional>
 #include <string>
 
 #include <boost/asio.hpp>
@@ -11,8 +12,10 @@
 #include <boost/beast/version.hpp>
 
 #include "http_server.h"
+#include "photo_controller.h"
 
 namespace vrc_photo_streamer::http {
+
 void http_server::tcp_server(tcp::acceptor& acceptor, tcp::socket& socket) {
   acceptor.async_accept(socket, [&](beast::error_code ec) {
     if (!ec) {
@@ -21,6 +24,7 @@ void http_server::tcp_server(tcp::acceptor& acceptor, tcp::socket& socket) {
     tcp_server(acceptor, socket);
   });
 }
+
 void http_server::run() {
   try {
     asio::ip::address address = boost::asio::ip::make_address("0.0.0.0");
@@ -41,6 +45,7 @@ void http_connection::start() {
   read_request();
   check_deadline();
 }
+
 void http_connection::read_request() {
   auto self = shared_from_this();
 
@@ -52,6 +57,7 @@ void http_connection::read_request() {
                      }
                    });
 }
+
 void http_connection::process_request() {
   response_.version(request_.version());
   response_.keep_alive(false);
@@ -60,8 +66,24 @@ void http_connection::process_request() {
   if (request_.method() == http::verb::get) {
     // TODO: ここらへんにいろいろ書いてく
     if (request_.target() == "/next") {
+      controller::photo_controller::next();
+    } else if (request_.target() == "/prev") {
+      controller::photo_controller::prev();
+    } else if (request_.target().substr(0, 7) == "/select") {
+      // std::cout << request_.target() << std::endl;
+      if (auto index = request_.target().find("?num="); index != std::string::npos) {
+        try {
+          int num = std::stoi(std::string(request_.target().substr(index + 5)));
+          controller::photo_controller::select(num);
+        } catch (std::invalid_argument e) {
+        }
+      } else {
+        controller::photo_controller::select(std::nullopt);
+      }
     }
   }
+
+  // 404で返すとPanoramaにキャッシュされない
   response_.result(http::status::not_found);
   response_.set(http::field::content_type, "text/plain");
   beast::ostream(response_.body()) << "File not found.";
@@ -80,6 +102,7 @@ void http_connection::write_response() {
     self->deadline_.cancel();
   });
 }
+
 void http_connection::check_deadline() {
   auto self = shared_from_this();
 
