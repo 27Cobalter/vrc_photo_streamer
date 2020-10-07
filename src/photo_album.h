@@ -22,12 +22,12 @@ public:
 
 private:
   std::mutex mutex_;
-  static constexpr char resources_dir[] = "resources";
-  std::set<std::filesystem::path> resource_paths;
-  int cols = 1920;
-  int rows = 1080;
+  static constexpr char resources_dir_[] = "resources";
+  std::set<std::filesystem::path> resource_paths_;
+  int cols_ = 1920;
+  int rows_ = 1080;
 
-  cv::Mat output_frame;
+  cv::Mat output_frame_;
 };
 } // namespace vrc_photo_streamer::photo
 #endif

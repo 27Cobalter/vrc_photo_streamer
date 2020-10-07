@@ -21,7 +21,7 @@ void rtsp_server::need_data(GstElement* appsrc, guint unused, context* ctx) {
   auto now      = chrono::system_clock::to_time_t(chrono::system_clock::now());
   cv::putText(image, std::ctime(&now), cv::Point(0, 60), cv::FONT_HERSHEY_SIMPLEX, 2.5,
               cv::Scalar(255, 255, 0), 3);
-  std::cout << std::ctime(&now) << std::endl;
+  // std::cout << std::ctime(&now) << std::endl;
 
   // imageのデータをgstのバッファに書き込む
   buffer = gst_buffer_new_allocate(nullptr, size_, nullptr);
@@ -68,33 +68,33 @@ void rtsp_server::initialize(int argc, char** argv, cv::Mat& frame, guint size) 
   GstRTSPMountPoints* mounts;
   gst_init(&argc, &argv);
 
-  this->loop = g_main_loop_new(nullptr, FALSE);
+  loop_ = g_main_loop_new(nullptr, FALSE);
 
-  this->server = gst_rtsp_server_new();
+  server_ = gst_rtsp_server_new();
 
-  mounts = gst_rtsp_server_get_mount_points(this->server);
+  mounts = gst_rtsp_server_get_mount_points(server_);
 
-  this->factory = gst_rtsp_media_factory_new();
-  gst_rtsp_media_factory_set_shared(this->factory, TRUE);
+  factory_ = gst_rtsp_media_factory_new();
+  gst_rtsp_media_factory_set_shared(factory_, TRUE);
   gst_rtsp_media_factory_set_launch(
-      this->factory,
+      factory_,
       "( appsrc name=vrc_photo_streamer is-live=true format=GST_FORMAT_TIME ! videoconvert ! "
       "x264enc "
       //"bitrate=16384 key-int-max=1 speed-preset=ultrafast tune=zerolatency ! "
       "bitrate=8192 key-int-max=1 speed-preset=ultrafast tune=zerolatency ! "
       "video/x-h264,profile=baseline ! rtph264pay config-interval=1 name=pay0 pt=98 )");
 
-  g_signal_connect(this->factory, "media-configure", (GCallback)media_configure, nullptr);
+  g_signal_connect(factory_, "media-configure", (GCallback)media_configure, nullptr);
 
-  gst_rtsp_mount_points_add_factory(mounts, "/test", this->factory);
+  gst_rtsp_mount_points_add_factory(mounts, "/test", factory_);
 
   g_object_unref(mounts);
 
-  gst_rtsp_server_attach(this->server, nullptr);
+  gst_rtsp_server_attach(server_, nullptr);
 }
 void rtsp_server::run() {
   g_print("stream ready at rtsp://127.0.0.1:8554/test\n");
-  g_main_loop_run(this->loop);
+  g_main_loop_run(loop_);
 }
 
 } // namespace vrc_photo_streamer::rtsp

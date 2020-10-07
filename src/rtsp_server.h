@@ -23,9 +23,9 @@ public:
 private:
   static cv::Mat frame_;
   static guint size_;
-  GMainLoop* loop;
-  GstRTSPServer* server;
-  GstRTSPMediaFactory* factory;
+  GMainLoop* loop_;
+  GstRTSPServer* server_;
+  GstRTSPMediaFactory* factory_;
 };
 } // namespace vrc_photo_streamer::rtsp
 
