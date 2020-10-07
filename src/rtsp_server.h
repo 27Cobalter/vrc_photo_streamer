@@ -7,6 +7,7 @@
 #include <opencv2/imgproc.hpp>
 
 namespace vrc_photo_streamer::rtsp {
+namespace chrono = std::chrono;
 typedef struct {
   GstClockTime timestamp;
 } context;

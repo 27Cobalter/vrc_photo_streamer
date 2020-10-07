@@ -1,8 +1,8 @@
+#include <chrono>
+#include <cmath>
 #include <filesystem>
 #include <iostream>
 #include <mutex>
-#include <cmath>
-#include <chrono>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgcodecs.hpp>
@@ -12,13 +12,12 @@
 
 namespace vrc_photo_streamer::photo {
 int photo_album::find_images() {
-  if (!std::filesystem::is_directory(resources_dir)) {
+  if (!filesystem::is_directory(resources_dir)) {
     throw std::runtime_error(std::string(resources_dir) + " is not directory.");
   }
 
   resource_paths.clear();
-  for (const std::filesystem::directory_entry& x :
-       std::filesystem::directory_iterator(resources_dir)) {
+  for (const filesystem::directory_entry& x : filesystem::directory_iterator(resources_dir)) {
     std::string path(x.path());
     if (path.substr(path.length() - 3) == "png") {
       resource_paths.insert(x.path());

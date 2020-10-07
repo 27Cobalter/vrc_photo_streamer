@@ -1,10 +1,10 @@
-#include <thread>
 #include <iostream>
+#include <thread>
 
 #include <opencv2/core/mat.hpp>
 
-#include "rtsp_server.h"
 #include "photo_album.h"
+#include "rtsp_server.h"
 
 int main(int argc, char** argv) {
   using namespace vrc_photo_streamer;

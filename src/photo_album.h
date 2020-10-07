@@ -2,13 +2,13 @@
 #define VRC_PHOTO_STREAMER_PHOTO_ALBUM_H
 
 #include <filesystem>
-#include <set>
 #include <mutex>
-#include <optional>
+#include <set>
 
 #include <opencv2/core/mat.hpp>
 
 namespace vrc_photo_streamer::photo {
+namespace filesystem = std::filesystem;
 typedef struct {
   int begin;
   int tiling;
