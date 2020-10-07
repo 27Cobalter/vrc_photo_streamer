@@ -1,5 +1,6 @@
 #include <chrono>
 #include <iostream>
+#include <memory>
 
 #include <gst/gst.h>
 #include <gst/rtsp-server/rtsp-server.h>
@@ -10,7 +11,7 @@
 
 namespace vrc_photo_streamer::rtsp {
 
-cv::Mat* rtsp_server::frame_ = nullptr;
+std::shared_ptr<cv::Mat> rtsp_server::frame_ = nullptr;
 guint rtsp_server::size_;
 
 void rtsp_server::need_data(GstElement* appsrc, guint unused, context* ctx) {
@@ -62,8 +63,9 @@ void rtsp_server::media_configure(GstRTSPMediaFactory* factory, GstRTSPMedia* me
   gst_object_unref(element);
 }
 
-void rtsp_server::initialize(int argc, char** argv, cv::Mat& frame, guint size) {
-  frame_ = &frame;
+void rtsp_server::initialize(int argc, char** argv, std::shared_ptr<cv::Mat> frame,
+                             guint size) {
+  frame_ = frame;
   size_  = size;
 
   GstRTSPMountPoints* mounts;

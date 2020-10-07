@@ -2,6 +2,7 @@
 #define VRC_PHOTO_STREAMER_PHOTO_ALBUM_H
 
 #include <filesystem>
+#include <memory>
 #include <mutex>
 #include <set>
 
@@ -20,7 +21,7 @@ class photo_album {
 public:
   int find_images();
   void update(page_data format);
-  cv::Mat& get_frame();
+  std::shared_ptr<cv::Mat> get_frame();
 
 private:
   std::mutex mutex_;
@@ -29,7 +30,7 @@ private:
   int cols_ = 1920;
   int rows_ = 1080;
 
-  cv::Mat output_frame_;
+  std::shared_ptr<cv::Mat> output_frame_ = std::make_shared<cv::Mat>();
 };
 } // namespace vrc_photo_streamer::photo
 #endif

@@ -10,7 +10,7 @@ namespace vrc_photo_streamer::controller {
 class photo_controller {
 public:
   static int find_images();
-  static cv::Mat& get_frame();
+  static std::shared_ptr<cv::Mat> get_frame();
   static void next();
   static void prev();
   static void select(std::optional<int> num);

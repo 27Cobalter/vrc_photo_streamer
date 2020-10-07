@@ -1,4 +1,5 @@
 #include <iostream>
+#include <memory>
 #include <thread>
 
 #include <opencv2/core/mat.hpp>
@@ -15,8 +16,8 @@ int main(int argc, char** argv) {
   std::thread hs([&http_server] { http_server.run(); });
 
   rtsp::rtsp_server rtsp_server;
-  cv::Mat& frame = controller::photo_controller::get_frame();
-  rtsp_server.initialize(argc, argv, frame, frame.total() * frame.channels());
+  std::shared_ptr<cv::Mat> frame = controller::photo_controller::get_frame();
+  rtsp_server.initialize(argc, argv, frame, frame->total() * frame->channels());
 
   std::thread rs([&rtsp_server] { rtsp_server.run(); });
 

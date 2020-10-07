@@ -3,6 +3,7 @@
 #include <filesystem>
 #include <iostream>
 #include <mutex>
+#include <memory>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgcodecs.hpp>
@@ -52,10 +53,10 @@ void photo_album::update(page_data format) {
 
   std::lock_guard<std::mutex> lock(mutex_);
 
-  output_frame_ = working.clone();
+  *output_frame_ = working.clone();
 }
 
-cv::Mat& photo_album::get_frame() {
+std::shared_ptr<cv::Mat> photo_album::get_frame() {
   std::lock_guard<std::mutex> lock(mutex_);
   return output_frame_;
 }

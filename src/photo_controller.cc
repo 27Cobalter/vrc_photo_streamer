@@ -16,7 +16,7 @@ int photo_controller::find_images() {
   return photo_album_.find_images();
 }
 
-cv::Mat& photo_controller::get_frame() {
+std::shared_ptr<cv::Mat> photo_controller::get_frame() {
   if (tiling_page_.tiling == 0) {
     end          = photo_album_.find_images();
     tiling_page_ = current_page_;
