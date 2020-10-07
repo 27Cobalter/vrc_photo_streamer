@@ -17,6 +17,7 @@ public:
 
 private:
   static void update(photo::page_data page);
+  static int tile2(photo::page_data page);
   static photo::page_data current_page_;
   static photo::page_data tiling_page_;
   static photo::photo_album photo_album_;
