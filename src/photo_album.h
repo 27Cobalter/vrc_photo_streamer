@@ -21,7 +21,7 @@ class photo_album {
 public:
   int find_images();
   void update(page_data format);
-  std::shared_ptr<cv::Mat> get_frame();
+  std::shared_ptr<cv::Mat> get_frame_ptr();
 
 private:
   std::mutex mutex_;

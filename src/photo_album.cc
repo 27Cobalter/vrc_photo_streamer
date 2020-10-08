@@ -56,7 +56,7 @@ void photo_album::update(page_data format) {
   *output_frame_ = working.clone();
 }
 
-std::shared_ptr<cv::Mat> photo_album::get_frame() {
+std::shared_ptr<cv::Mat> photo_album::get_frame_ptr() {
   std::lock_guard<std::mutex> lock(mutex_);
   return output_frame_;
 }

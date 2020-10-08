@@ -8,45 +8,41 @@
 
 namespace vrc_photo_streamer::controller {
 
-photo::page_data photo_controller::current_page_ = {0, 3};
-photo::page_data photo_controller::tiling_page_  = {0, 0};
-photo::photo_album photo_controller::photo_album_;
-size_t photo_controller::end = 0;
+photo_controller::photo_controller() {
+  current_page_ = {0, 3};
+  tiling_page_  = current_page_;
+
+  end_ = photo_album_.find_images();
+  update(current_page_);
+}
 
 int photo_controller::find_images() {
   return photo_album_.find_images();
 }
 
-std::shared_ptr<cv::Mat> photo_controller::get_frame() {
-  if (tiling_page_.tiling == 0) {
-    end          = photo_album_.find_images();
-    tiling_page_ = current_page_;
-
-    update(current_page_);
-  }
-
-  return photo_album_.get_frame();
+std::shared_ptr<cv::Mat> photo_controller::get_frame_ptr() {
+  return photo_album_.get_frame_ptr();
 }
 
 void photo_controller::next() {
-  end                       = photo_album_.find_images();
+  end_                      = photo_album_.find_images();
   photo::page_data new_page = current_page_;
 
   new_page.start += tile2(current_page_);
 
-  if (new_page.start >= end) new_page.start = 0;
+  if (new_page.start >= end_) new_page.start = 0;
 
   update(new_page);
 }
 
 void photo_controller::prev() {
-  end                       = photo_album_.find_images();
+  end_                      = photo_album_.find_images();
   photo::page_data new_page = current_page_;
 
   new_page.start -= tile2(current_page_);
 
   if (new_page.start < 0)
-    new_page.start = std::trunc((end - 1) / tile2(new_page)) * tile2(new_page);
+    new_page.start = std::trunc((end_ - 1) / tile2(new_page)) * tile2(new_page);
 
   update(new_page);
 }
@@ -59,7 +55,7 @@ void photo_controller::select(std::optional<int> num) {
       tiling_page_ = current_page_;
     }
 
-    new_page.start += std::clamp(num.value(), 0, tile2(tiling_page_) - 1);
+    new_page.start += std::clamp(num.value(), 0, tile2(current_page_) - 1);
     new_page.tiling = 1;
     // std::cout << "new_page " << new_page.start << ", " << new_page.tiling << std::endl;
   } else {
@@ -72,7 +68,7 @@ void photo_controller::select(std::optional<int> num) {
 
 void photo_controller::update(photo::page_data new_page) {
   current_page_ = new_page;
-  // std::cout << "update: " << new_page.start << ", " << new_page.tiling << std::endl;
+  std::cout << "update: " << new_page.start << ", " << new_page.tiling << std::endl;
   photo_album_.update(new_page);
 }
 

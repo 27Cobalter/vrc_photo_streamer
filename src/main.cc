@@ -12,11 +12,14 @@
 int main(int argc, char** argv) {
   using namespace vrc_photo_streamer;
 
-  http::http_server http_server;
+  std::shared_ptr<controller::photo_controller> controller =
+      std::make_shared<controller::photo_controller>();
+
+  http::http_server http_server(controller);
   std::thread hs([&http_server] { http_server.run(); });
 
   rtsp::rtsp_server rtsp_server;
-  std::shared_ptr<cv::Mat> frame = controller::photo_controller::get_frame();
+  std::shared_ptr<cv::Mat> frame = controller->get_frame_ptr();
   rtsp_server.initialize(argc, argv, frame, frame->total() * frame->channels());
 
   std::thread rs([&rtsp_server] { rtsp_server.run(); });

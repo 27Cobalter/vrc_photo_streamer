@@ -9,19 +9,20 @@ namespace vrc_photo_streamer::controller {
 
 class photo_controller {
 public:
-  static int find_images();
-  static std::shared_ptr<cv::Mat> get_frame();
-  static void next();
-  static void prev();
-  static void select(std::optional<int> num);
+  photo_controller();
+  int find_images();
+  std::shared_ptr<cv::Mat> get_frame_ptr();
+  void next();
+  void prev();
+  void select(std::optional<int> num);
 
 private:
-  static void update(photo::page_data page);
-  static int tile2(photo::page_data page);
-  static photo::page_data current_page_;
-  static photo::page_data tiling_page_;
-  static photo::photo_album photo_album_;
-  static size_t end;
+  void update(photo::page_data page);
+  int tile2(photo::page_data page);
+  photo::page_data current_page_;
+  photo::page_data tiling_page_;
+  photo::photo_album photo_album_;
+  size_t end_;
 };
 } // namespace vrc_photo_streamer::controller
 #endif

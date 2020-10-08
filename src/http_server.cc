@@ -17,10 +17,13 @@
 
 namespace vrc_photo_streamer::http {
 
+http_server::http_server(std::shared_ptr<controller::photo_controller> controller)
+    : controller_(controller){};
+
 void http_server::tcp_server(tcp::acceptor& acceptor, tcp::socket& socket) {
   acceptor.async_accept(socket, [&](beast::error_code ec) {
     if (!ec) {
-      std::make_shared<http_connection>(std::move(socket))->start();
+      std::make_shared<http_connection>(std::move(socket), controller_)->start();
     }
     tcp_server(acceptor, socket);
   });
@@ -41,7 +44,9 @@ void http_server::run() {
   }
 }
 
-http_connection::http_connection(tcp::socket socket) : socket_(std::move(socket)){};
+http_connection::http_connection(tcp::socket socket,
+                                 std::shared_ptr<controller::photo_controller> controller)
+    : socket_(std::move(socket)), controller_(controller){};
 void http_connection::start() {
   read_request();
   check_deadline();
@@ -67,19 +72,19 @@ void http_connection::process_request() {
   if (request_.method() == http::verb::get) {
     // TODO: ここらへんにいろいろ書いてく
     if (request_.target() == "/next") {
-      controller::photo_controller::next();
+      controller_->next();
     } else if (request_.target() == "/prev") {
-      controller::photo_controller::prev();
+      controller_->prev();
     } else if (request_.target().substr(0, 7) == "/select") {
       // std::cout << request_.target() << std::endl;
       if (auto index = request_.target().find("?num="); index != std::string::npos) {
         try {
           int num = std::stoi(std::string(request_.target().substr(index + 5)));
-          controller::photo_controller::select(num);
+          controller_->select(num);
         } catch (std::invalid_argument e) {
         }
       } else {
-        controller::photo_controller::select(std::nullopt);
+        controller_->select(std::nullopt);
       }
     }
   }
