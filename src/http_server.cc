@@ -1,3 +1,5 @@
+#include "http_server.h"
+
 #include <chrono>
 #include <cstdlib>
 #include <ctime>
@@ -11,7 +13,6 @@
 #include <boost/beast/http.hpp>
 #include <boost/beast/version.hpp>
 
-#include "http_server.h"
 #include "photo_controller.h"
 
 namespace vrc_photo_streamer::http {

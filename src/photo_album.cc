@@ -1,3 +1,5 @@
+#include "photo_album.h"
+
 #include <chrono>
 #include <cmath>
 #include <filesystem>
@@ -8,8 +10,6 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
-
-#include "photo_album.h"
 
 namespace vrc_photo_streamer::photo {
 

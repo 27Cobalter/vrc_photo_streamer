@@ -1,3 +1,5 @@
+#include "rtsp_server.h"
+
 #include <chrono>
 #include <iostream>
 #include <memory>
@@ -6,8 +8,6 @@
 #include <gst/rtsp-server/rtsp-server.h>
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgproc.hpp>
-
-#include "rtsp_server.h"
 
 namespace vrc_photo_streamer::rtsp {
 

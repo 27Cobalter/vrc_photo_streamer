@@ -1,8 +1,9 @@
+#include "photo_controller.h"
+
 #include <algorithm>
 #include <cmath>
 #include <iostream>
 
-#include "photo_controller.h"
 #include "photo_album.h"
 
 namespace vrc_photo_streamer::controller {
