@@ -12,7 +12,7 @@
 - gst-rtsp-server
 - imagemagick
 - opencv4
-- openmp
+- openmp (g++ならなくてもよし)
 
 ## ビルド&実行
 ```sh
