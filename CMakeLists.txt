@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.18)
 
 project(vrc_photo_streamer)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_COMPILER /usr/bin/clang++)
 
 set(CMAKE_CXX_FLAGS
@@ -26,7 +26,11 @@ find_package(Boost REQUIRED)
 find_package(PkgConfig REQUIRED)
 
 pkg_check_modules(GstRtspServer gstreamer-rtsp-server-1.0 REQUIRED)
+pkg_check_modules(PNG libpng REQUIRED)
 include_directories(${GstRtspServer_INCLUDE_DIRS})
+include_directories(${PNG_INCLUDE_DIRS})
+
+add_definitions(-DBOOST_ASIO_DISABLE_CONCEPTS)
 
 file(COPY ${CMAKE_SOURCE_DIR}/resources DESTINATION ${CMAKE_BINARY_DIR})
 add_subdirectory(src)

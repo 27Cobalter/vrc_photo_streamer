@@ -11,6 +11,8 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
 
+#include "vrc_meta_tool.h"
+
 namespace vrc_photo_streamer::photo {
 
 int photo_album::find_images() {
