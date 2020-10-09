@@ -9,7 +9,7 @@ namespace vrc_photo_streamer::controller {
 
 class photo_controller {
 public:
-  photo_controller();
+  photo_controller(int argc, char** argv);
   int find_images();
   std::shared_ptr<cv::Mat> get_frame_ptr();
   void next();
@@ -21,7 +21,7 @@ private:
   int tile2(photo::page_data page);
   photo::page_data current_page_;
   photo::page_data tiling_page_;
-  photo::photo_album photo_album_;
+  std::unique_ptr<photo::photo_album> photo_album_;
   size_t end_;
 };
 } // namespace vrc_photo_streamer::controller

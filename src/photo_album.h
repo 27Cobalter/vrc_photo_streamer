@@ -8,6 +8,8 @@
 
 #include <opencv2/core/mat.hpp>
 
+#include "vrc_meta_tool.h"
+
 namespace vrc_photo_streamer::photo {
 
 namespace filesystem = std::filesystem;
@@ -19,16 +21,18 @@ typedef struct {
 
 class photo_album {
 public:
+  photo_album(int argc, char** argv);
   int find_images();
   void update(page_data format);
   std::shared_ptr<cv::Mat> get_frame_ptr();
 
 private:
+  void put_meta_text(cv::Mat& mat, meta_tool::meta_tool& meta);
   std::mutex mutex_;
   static constexpr char resources_dir_[] = "resources";
   std::set<std::filesystem::path> resource_paths_;
-  int cols_ = 1920;
-  int rows_ = 1080;
+  const int cols_ = 1920;
+  const int rows_ = 1080;
 
   std::shared_ptr<cv::Mat> output_frame_ = std::make_shared<cv::Mat>();
 };

@@ -4,13 +4,15 @@
 
 ## 必要なライブラリ
 - boost
-- opencv4
 - gstreamer
 - gst-plugins-base
 - gst-plugins-good
 - gst-plugins-ugly
 - gst-plugins-bad
 - gst-rtsp-server
+- imagemagick
+- opencv4
+- openmp
 
 ## ビルド&実行
 ```sh

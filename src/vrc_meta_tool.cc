@@ -42,6 +42,12 @@ decltype(auto) chunk_util::read() {
   png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, nullptr, nullptr, nullptr);
   if (!png_ptr) throw std::runtime_error("failed to png_create_read_struct.");
 
+  auto meta_chunks = std::make_unique<std::vector<std::tuple<std::string, std::string>>>();
+
+  if (setjmp(png_jmpbuf(png_ptr))) {
+    return meta_chunks;
+  }
+
   info_ptr = png_create_info_struct(png_ptr);
   end_ptr  = png_create_info_struct(png_ptr);
   if (!info_ptr || !end_ptr) throw std::invalid_argument("failed to png_create_info_struct.");
@@ -69,8 +75,6 @@ decltype(auto) chunk_util::read() {
       static_cast<int>(png_get_unknown_chunks(png_ptr, info_ptr, &info_unknown_ptr));
   auto end_unknown_num =
       static_cast<int>(png_get_unknown_chunks(png_ptr, end_ptr, &end_unknown_ptr));
-
-  auto meta_chunks = std::make_unique<std::vector<std::tuple<std::string, std::string>>>();
 
   for (int i = 0; i < info_unknown_num; i++) {
     auto chunk = parse_chunk(info_unknown_ptr[i]);

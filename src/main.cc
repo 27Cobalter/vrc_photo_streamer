@@ -13,7 +13,7 @@ int main(int argc, char** argv) {
   using namespace vrc_photo_streamer;
 
   std::shared_ptr<controller::photo_controller> controller =
-      std::make_shared<controller::photo_controller>();
+      std::make_shared<controller::photo_controller>(argc, argv);
 
   http::http_server http_server(controller);
   std::thread hs([&http_server] { http_server.run(); });
