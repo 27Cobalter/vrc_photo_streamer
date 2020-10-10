@@ -53,5 +53,9 @@ include_directories(${PNG_INCLUDE_DIRS})
 
 add_definitions(-DBOOST_ASIO_DISABLE_CONCEPTS)
 
-file(COPY ${CMAKE_SOURCE_DIR}/resources DESTINATION ${CMAKE_BINARY_DIR})
+if(NOT EXISTS ${CMAKE_BINARY_DIR}/resources)
+  message(STATUS "Copy resources directory")
+  file(COPY ${CMAKE_SOURCE_DIR}/resources DESTINATION ${CMAKE_BINARY_DIR})
+endif()
+
 add_subdirectory(src)
