@@ -75,6 +75,8 @@ void http_connection::process_request() {
       controller_->next();
     } else if (request_.target() == "/prev") {
       controller_->prev();
+    } else if (request_.target() == "/head") {
+      controller_->head();
     } else if (request_.target().substr(0, 7) == "/select") {
       // std::cout << request_.target() << std::endl;
       if (auto index = request_.target().find("?num="); index != std::string::npos) {

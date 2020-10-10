@@ -14,6 +14,7 @@ public:
   std::shared_ptr<cv::Mat> get_frame_ptr();
   void next();
   void prev();
+  void head();
   void select(std::optional<int> num);
 
 private:

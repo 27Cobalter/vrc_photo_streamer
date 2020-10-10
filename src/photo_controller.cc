@@ -48,6 +48,15 @@ void photo_controller::prev() {
   update(new_page);
 }
 
+void photo_controller::head() {
+  end_                      = photo_album_->find_images();
+  photo::page_data new_page = current_page_;
+
+  new_page.start = 0;
+
+  update(new_page);
+}
+
 void photo_controller::select(std::optional<int> num) {
   photo::page_data new_page = current_page_;
 
