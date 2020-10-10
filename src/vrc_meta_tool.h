@@ -40,6 +40,7 @@ private:
 class meta_tool {
 public:
   std::optional<std::string> date() const;
+  std::optional<std::string> readable_date() const;
   std::optional<std::string> photographer() const;
   std::optional<std::string> world() const;
   std::map<std::string, std::optional<std::string>> users() const;

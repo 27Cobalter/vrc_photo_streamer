@@ -2,6 +2,7 @@
 
 #include <cstdio>
 #include <filesystem>
+// #include <format>
 #include <iostream>
 #include <map>
 #include <memory>
@@ -94,6 +95,23 @@ decltype(auto) chunk_util::read() {
 
 std::optional<std::string> meta_tool::date() const {
   return data_.date;
+}
+
+std::optional<std::string> meta_tool::readable_date() const {
+  if (data_.date == std::nullopt) {
+    return std::nullopt;
+  }
+  const std::string year   = data_.date.value().substr(0, 4);
+  const std::string month  = data_.date.value().substr(4, 2);
+  const std::string day    = data_.date.value().substr(6, 2);
+  const std::string hour   = data_.date.value().substr(8, 2);
+  const std::string minute = data_.date.value().substr(10, 2);
+  const std::string second = data_.date.value().substr(12, 2);
+  // const std::string milli  = data_.date.value().substr(14, 3);
+
+  // コンパイラのC++20対応待ち
+  // return std::format("{}-{}-{} {}:{}:{}", year, month, day, hour, minute, second);
+  return year + "-" + month + "-" + day + " " + hour + ":" + minute + ":" + second;
 }
 
 std::optional<std::string> meta_tool::photographer() const {

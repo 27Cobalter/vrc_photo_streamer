@@ -103,7 +103,7 @@ void photo_album::put_meta_text(cv::Mat& mat, meta_tool::meta_tool& meta) {
   if (meta.date().has_value()) {
     draw_list.push_back(Magick::DrawablePointSize(point_size));
     draw_list.push_back(
-        Magick::DrawableText(date_pos.x, date_pos.y, meta.date().value(), "utf-8"));
+        Magick::DrawableText(date_pos.x, date_pos.y, meta.readable_date().value(), "utf-8"));
   }
   if (meta.world().has_value()) {
     draw_list.push_back(Magick::DrawablePointSize(point_size));
