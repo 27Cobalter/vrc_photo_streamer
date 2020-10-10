@@ -92,7 +92,7 @@ void http_connection::process_request() {
   // 404で返すとPanoramaにキャッシュされない
   response_.result(http::status::not_found);
   response_.set(http::field::content_type, "text/plain");
-  beast::ostream(response_.body()) << "File not found.";
+  beast::ostream(response_.body()) << "File not found.\n";
   response_.set(http::field::server, "Beast");
 
   write_response();

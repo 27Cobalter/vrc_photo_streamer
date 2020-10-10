@@ -46,9 +46,10 @@ void photo_album::update(page_data format) {
   auto resource_it = resource_paths_.rbegin();
 
   for (int i = 0; i < format.start; i++) resource_it++;
+  std::unique_ptr<cv::Mat> image;
   for (int i = 0; i < std::pow(format.tiling, 2) && resource_it != resource_paths_.rend();
        i++, resource_it++) {
-    cv::Mat image = cv::imread(*resource_it);
+    image         = std::make_unique<cv::Mat>(cv::imread(*resource_it));
     double tiling = 1.0 / format.tiling;
     int tx        = (i % format.tiling) * cols_ / format.tiling;
     int ty        = (i / format.tiling) * rows_ / format.tiling;
@@ -67,8 +68,9 @@ void photo_album::update(page_data format) {
     }
 
     cv::Mat affine = (cv::Mat_<double>(2, 3) << tiling, 0, tx, 0, tiling, ty);
-    cv::warpAffine(image, working, affine, working.size(), cv::INTER_LINEAR,
+    cv::warpAffine(*image, working, affine, working.size(), cv::INTER_LINEAR,
                    cv::BORDER_TRANSPARENT);
+    image.reset();
   }
 
   std::lock_guard<std::mutex> lock(mutex_);
@@ -84,7 +86,8 @@ std::shared_ptr<cv::Mat> photo_album::get_frame_ptr() {
 // opencvでは日本語描画できないのでImageMagick使う
 void photo_album::put_meta_text(cv::Mat& mat, meta_tool::meta_tool& meta) {
   // Magick::Image image(1920, 1080, "BGR", Magick::CharPixel, mat.data);
-  Magick::Image image(Magick::Geometry(cols_, rows_), Magick::Color(0, 0, 0));
+  std::unique_ptr<Magick::Image> image =
+      std::make_unique<Magick::Image>(Magick::Geometry(cols_, rows_), Magick::Color(0, 0, 0));
 
   const int point_size = rows_ * 0.08;
   const cv::Point date_pos(0, rows_ * 0.8 + rows_ * 0.09);
@@ -116,7 +119,8 @@ void photo_album::put_meta_text(cv::Mat& mat, meta_tool::meta_tool& meta) {
         Magick::DrawableText(user_pos.x, user_pos.y + i * user_point_size, user_name));
     i++;
   }
-  image.draw(draw_list);
-  image.write(0, 0, cols_, rows_, "BGR", Magick::CharPixel, mat.data);
+  image->draw(draw_list);
+  image->write(0, 0, cols_, rows_, "BGR", Magick::CharPixel, mat.data);
+  image.reset();
 }
 } // namespace vrc_photo_streamer::photo
