@@ -8,8 +8,8 @@
 
 namespace vrc_photo_streamer::controller {
 
-photo_controller::photo_controller(int argc, char** argv) {
-  photo_album_  = std::make_unique<photo::photo_album>(argc, argv);
+photo_controller::photo_controller(int argc, char** argv, int output_cols, int output_rows) {
+  photo_album_  = std::make_unique<photo::photo_album>(argc, argv, output_cols, output_rows);
   current_page_ = {0, 3};
   tiling_page_  = current_page_;
 

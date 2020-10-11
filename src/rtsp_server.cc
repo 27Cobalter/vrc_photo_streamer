@@ -12,7 +12,9 @@
 namespace vrc_photo_streamer::rtsp {
 
 std::shared_ptr<cv::Mat> rtsp_server::frame_ = nullptr;
-guint rtsp_server::size_;
+guint rtsp_server::size_                     = 0;
+int rtsp_server::output_cols_                = 0;
+int rtsp_server::output_rows_                = 0;
 
 void rtsp_server::need_data(GstElement* appsrc, guint unused, context* ctx) {
   GstBuffer* buffer;
@@ -20,8 +22,8 @@ void rtsp_server::need_data(GstElement* appsrc, guint unused, context* ctx) {
 
   cv::Mat image = frame_->clone();
   auto now      = chrono::system_clock::to_time_t(chrono::system_clock::now());
-  cv::putText(image, std::ctime(&now), cv::Point(0, 60), cv::FONT_HERSHEY_SIMPLEX, 2.5,
-              cv::Scalar(255, 255, 0), 3);
+  cv::putText(image, std::ctime(&now), cv::Point(0, 30), cv::FONT_HERSHEY_SIMPLEX, 1,
+              cv::Scalar(255, 255, 0), 1);
   // std::cout << std::ctime(&now) << std::endl;
 
   // imageのデータをgstのバッファに書き込む
@@ -49,8 +51,8 @@ void rtsp_server::media_configure(GstRTSPMediaFactory* factory, GstRTSPMedia* me
   gst_util_set_object_arg(G_OBJECT(appsrc), "format", "time");
   g_object_set(G_OBJECT(appsrc), "caps",
                gst_caps_new_simple("video/x-raw", "format", G_TYPE_STRING, "BGR", "width",
-                                   G_TYPE_INT, 1920, "height", G_TYPE_INT, 1080, "framerate",
-                                   GST_TYPE_FRACTION, 5, 1, nullptr),
+                                   G_TYPE_INT, output_cols_, "height", G_TYPE_INT, output_rows_,
+                                   "framerate", GST_TYPE_FRACTION, 5, 1, nullptr),
                nullptr);
 
   ctx            = g_new0(context, 1);
@@ -63,10 +65,11 @@ void rtsp_server::media_configure(GstRTSPMediaFactory* factory, GstRTSPMedia* me
   gst_object_unref(element);
 }
 
-void rtsp_server::initialize(int argc, char** argv, std::shared_ptr<cv::Mat> frame,
-                             guint size) {
-  frame_ = frame;
-  size_  = size;
+void rtsp_server::initialize(int argc, char** argv, std::shared_ptr<cv::Mat> frame) {
+  frame_       = frame;
+  size_        = static_cast<guint>(frame_->total() * frame->channels());
+  output_cols_ = frame_->cols;
+  output_rows_ = frame_->rows;
 
   GstRTSPMountPoints* mounts;
   gst_init(&argc, &argv);

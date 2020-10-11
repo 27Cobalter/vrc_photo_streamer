@@ -21,7 +21,7 @@ typedef struct {
 
 class photo_album {
 public:
-  photo_album(int argc, char** argv);
+  photo_album(int argc, char** argv, int output_cols, int output_rows);
   int find_images();
   void update(page_data format);
   std::shared_ptr<cv::Mat> get_frame_ptr();
@@ -31,8 +31,8 @@ private:
   std::mutex mutex_;
   static constexpr char resources_dir_[] = "resources";
   std::set<std::filesystem::path> resource_paths_;
-  const int cols_ = 1920;
-  const int rows_ = 1080;
+  int output_cols_;
+  int output_rows_;
 
   std::shared_ptr<cv::Mat> output_frame_ = std::make_shared<cv::Mat>();
 };

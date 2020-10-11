@@ -9,7 +9,7 @@ namespace vrc_photo_streamer::controller {
 
 class photo_controller {
 public:
-  photo_controller(int argc, char** argv);
+  photo_controller(int argc, char** argv, int output_cols, int output_rows);
   int find_images();
   std::shared_ptr<cv::Mat> get_frame_ptr();
   void next();
