@@ -29,9 +29,10 @@ void photo_controller::next() {
   end_                      = photo_album_->find_images();
   photo::page_data new_page = current_page_;
 
-  new_page.start += tile2(current_page_);
+  new_page.start -= tile2(current_page_);
 
-  if (new_page.start >= end_) new_page.start = 0;
+  if (new_page.start < 0)
+    new_page.start = std::trunc((end_ - 1) / tile2(new_page)) * tile2(new_page);
 
   update(new_page);
 }
@@ -40,10 +41,9 @@ void photo_controller::prev() {
   end_                      = photo_album_->find_images();
   photo::page_data new_page = current_page_;
 
-  new_page.start -= tile2(current_page_);
+  new_page.start += tile2(current_page_);
 
-  if (new_page.start < 0)
-    new_page.start = std::trunc((end_ - 1) / tile2(new_page)) * tile2(new_page);
+  if (new_page.start >= end_) new_page.start = 0;
 
   update(new_page);
 }
@@ -53,6 +53,7 @@ void photo_controller::head() {
   photo::page_data new_page = current_page_;
 
   new_page.start = 0;
+  new_page.tiling = 3;
 
   update(new_page);
 }
