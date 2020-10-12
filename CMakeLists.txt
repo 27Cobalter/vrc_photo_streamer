@@ -20,6 +20,11 @@ elseif(${CMAKE_SYSTEM_PROCESSOR} STREQUAL "x86_64")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
 endif()
 
+set(Boost_USE_STATIC_LIBS ON)
+set(Boost_USE_MULTITHREADED ON)
+set(Boost_USE_STATIC_RUNTIME OFF)
+set(CMAKE_EXE_LINKER_FLAGS "-lboost_thread")
+
 find_package(Boost REQUIRED)
 find_package(OpenCV REQUIRED)
 find_package(PkgConfig REQUIRED)
@@ -47,6 +52,8 @@ execute_process(
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GMXX_CPP_FLAGS} ${GMXX_CXX_FLAGS}")
 set(LINK_FLAGS "${LINK_FLAGS} ${GMXX_LD_FLAGS}")
+
+set(LINK_FLAGS "${LINK_FLAGS} -lboost_thread")
 
 include_directories(${GstRtspServer_INCLUDE_DIRS})
 include_directories(${PNG_INCLUDE_DIRS})
