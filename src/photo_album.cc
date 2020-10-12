@@ -4,14 +4,11 @@
 #include <cmath>
 #include <filesystem>
 #include <iostream>
-#include <mutex>
 #include <memory>
+#include <mutex>
 #include <vector>
 
 #include <Magick++.h>
-#include <boost/bind.hpp>
-#include <boost/asio/thread_pool.hpp>
-#include <boost/asio.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/imgproc.hpp>
@@ -23,13 +20,6 @@ namespace vrc_photo_streamer::photo {
 photo_album::photo_album(int argc, char** argv, int output_cols, int output_rows)
     : output_cols_(output_cols), output_rows_(output_rows) {
   Magick::InitializeMagick(*argv);
-  work_ = new boost::asio::io_service::work(thread_);
-  for (int i = 0; i < 5; i++)
-    thread_group_.create_thread(boost::bind(&boost::asio::io_service::run, &thread_));
-}
-
-photo_album::~photo_album() {
-  delete (work_);
 }
 
 int photo_album::find_images() {
@@ -75,6 +65,7 @@ void photo_album::update(page_data format) {
           put_meta_text(working, meta);
         }
       } catch (std::runtime_error e) {
+        // 自分で投げたものであればpngじゃないファイルを開いたとき
       }
     }
 
@@ -82,48 +73,16 @@ void photo_album::update(page_data format) {
     cv::warpAffine(*image, working, affine, working.size(), cv::INTER_LINEAR,
                    cv::BORDER_TRANSPARENT);
     image.reset();
-    thread_queue_ -= 1;
   };
 
-  // bench
-  auto rit            = resource_it;
-  auto thread_elapsed = 0;
-  auto pool_elapsed   = 0;
-  for (int i = 0; i < 10; i++) {
-    // init
-    resource_it = rit;
-    auto p      = std::chrono::high_resolution_clock::now();
-    std::vector<std::thread> ths;
-    for (int i = 0; i < std::pow(format.tiling, 2) && resource_it != resource_paths_.rend();
-         i++, resource_it++) {
-      ths.push_back(std::thread(func, i, resource_it));
-    }
-    for (auto it = ths.begin(); it != ths.end(); it++) {
-      it->join();
-    }
-    auto p_      = std::chrono::high_resolution_clock::now();
-    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(p_ - p).count();
-    thread_elapsed += elapsed;
-    std::cout << "thread " << elapsed << std::endl;
-
-    // init
-    resource_it   = rit;
-    thread_queue_ = 0;
-    auto q        = std::chrono::high_resolution_clock::now();
-    for (int i = 0; i < std::pow(format.tiling, 2) && resource_it != resource_paths_.rend();
-         i++, resource_it++) {
-      thread_queue_ += 1;
-      thread_.post(boost::bind<void>(func, i, resource_it));
-    }
-    while (thread_queue_ != 0) {
-    }
-    auto q_       = std::chrono::high_resolution_clock::now();
-    auto elapsed_ = std::chrono::duration_cast<std::chrono::milliseconds>(q_ - q).count();
-    pool_elapsed += elapsed_;
-    std::cout << "pool  " << elapsed_ << std::endl;
+  std::vector<std::thread> thread_group;
+  for (int i = 0; i < std::pow(format.tiling, 2) && resource_it != resource_paths_.rend();
+       i++, resource_it++) {
+    thread_group.push_back(std::thread(func, i, resource_it));
   }
-  std::cout << "thread elapsed: " << thread_elapsed << std::endl;
-  std::cout << "pool   elapsed: " << pool_elapsed << std::endl;
+  for (auto thread_it = thread_group.begin(); thread_it != thread_group.end(); thread_it++) {
+    thread_it->join();
+  }
 
   std::lock_guard<std::mutex> lock(mutex_);
 
