@@ -52,7 +52,7 @@ void photo_controller::head() {
   end_                      = photo_album_->find_images();
   photo::page_data new_page = current_page_;
 
-  new_page.start = 0;
+  new_page.start  = 0;
   new_page.tiling = 3;
 
   update(new_page);
