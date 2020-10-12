@@ -103,7 +103,7 @@ void http_connection::process_request() {
 void http_connection::write_response() {
   auto self = shared_from_this();
 
-  response_.set(http::field::content_length, response_.body().size());
+  response_.content_length(response_.body().size());
 
   http::async_write(socket_, response_, [self](beast::error_code ec, std::size_t) {
     self->socket_.shutdown(tcp::socket::shutdown_send, ec);
