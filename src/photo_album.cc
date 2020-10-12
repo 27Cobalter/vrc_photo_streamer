@@ -4,8 +4,9 @@
 #include <cmath>
 #include <filesystem>
 #include <iostream>
-#include <mutex>
 #include <memory>
+#include <mutex>
+#include <vector>
 
 #include <Magick++.h>
 #include <opencv2/core/core.hpp>
@@ -47,9 +48,8 @@ void photo_album::update(page_data format) {
   auto resource_it = resource_paths_.rbegin();
 
   for (int i = 0; i < format.start; i++) resource_it++;
-  std::unique_ptr<cv::Mat> image;
-  for (int i = 0; i < std::pow(format.tiling, 2) && resource_it != resource_paths_.rend();
-       i++, resource_it++) {
+  auto func = [&](int i, auto resource_it) {
+    std::unique_ptr<cv::Mat> image;
     image        = std::make_unique<cv::Mat>(cv::imread(*resource_it));
     double scale = (static_cast<double>(output_rows_) / image->rows) / format.tiling;
     int tx       = (i % format.tiling) * output_cols_ / format.tiling;
@@ -65,6 +65,7 @@ void photo_album::update(page_data format) {
           put_meta_text(working, meta);
         }
       } catch (std::runtime_error e) {
+        // 自分で投げたものであればpngじゃないファイルを開いたとき
       }
     }
 
@@ -72,6 +73,15 @@ void photo_album::update(page_data format) {
     cv::warpAffine(*image, working, affine, working.size(), cv::INTER_LINEAR,
                    cv::BORDER_TRANSPARENT);
     image.reset();
+  };
+
+  std::vector<std::thread> thread_group;
+  for (int i = 0; i < std::pow(format.tiling, 2) && resource_it != resource_paths_.rend();
+       i++, resource_it++) {
+    thread_group.push_back(std::thread(func, i, resource_it));
+  }
+  for (auto thread_it = thread_group.begin(); thread_it != thread_group.end(); thread_it++) {
+    thread_it->join();
   }
 
   std::lock_guard<std::mutex> lock(mutex_);

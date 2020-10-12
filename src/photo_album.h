@@ -6,6 +6,9 @@
 #include <mutex>
 #include <set>
 
+#include <boost/thread.hpp>
+#include <boost/asio.hpp>
+#include <boost/asio/thread_pool.hpp>
 #include <opencv2/core/mat.hpp>
 
 #include "vrc_meta_tool.h"
