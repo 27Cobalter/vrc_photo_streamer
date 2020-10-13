@@ -20,15 +20,21 @@ void rtsp_server::need_data(GstElement* appsrc, guint unused, context* ctx) {
   GstBuffer* buffer;
   GstFlowReturn ret;
 
-  cv::Mat image = frame_->clone();
-  auto now      = chrono::system_clock::to_time_t(chrono::system_clock::now());
-  cv::putText(image, std::ctime(&now), cv::Point(0, 30), cv::FONT_HERSHEY_SIMPLEX, 1,
-              cv::Scalar(255, 255, 0), 1);
-  // std::cout << std::ctime(&now) << std::endl;
-
-  // imageのデータをgstのバッファに書き込む
   buffer = gst_buffer_new_allocate(nullptr, size_, nullptr);
+  constexpr bool print_time = false;
+  if (print_time) {
+    cv::Mat image = frame_->clone();
+    auto now      = chrono::system_clock::to_time_t(chrono::system_clock::now());
+    cv::putText(image, std::ctime(&now), cv::Point(0, 30), cv::FONT_HERSHEY_SIMPLEX, 1,
+                cv::Scalar(255, 255, 0), 1);
+    std::cout << std::ctime(&now) << std::endl;
+    // std::cout << std::ctime(&now) << std::endl;
+
+    // imageのデータをgstのバッファに書き込む
   gst_buffer_fill(buffer, 0, image.data, size_);
+  }else{
+  gst_buffer_fill(buffer, 0, frame_->data, size_);
+  }
 
   GST_BUFFER_PTS(buffer)      = ctx->timestamp;
   GST_BUFFER_DURATION(buffer) = gst_util_uint64_scale_int(1, GST_SECOND, 5);
