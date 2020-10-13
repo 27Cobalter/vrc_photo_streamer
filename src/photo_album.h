@@ -30,7 +30,7 @@ public:
   std::shared_ptr<cv::Mat> get_frame_ptr();
 
 private:
-  void put_meta_text(cv::Mat& mat, meta_tool::meta_tool& meta);
+  void put_meta_text(std::shared_ptr<cv::Mat> mat, meta_tool::meta_tool& meta);
   std::mutex mutex_;
   static constexpr char resources_dir_[] = "resources";
   std::set<std::filesystem::path> resource_paths_;
