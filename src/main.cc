@@ -11,8 +11,10 @@
 
 int main(int argc, char** argv) {
   using namespace vrc_photo_streamer;
-  constexpr int stream_cols = 1920;
-  constexpr int stream_rows = 1080;
+  // constexpr int stream_cols = 1920;
+  // constexpr int stream_rows = 1080;
+  constexpr int stream_cols = 3840;
+  constexpr int stream_rows = 2160;
 
   std::shared_ptr<controller::photo_controller> controller =
       std::make_shared<controller::photo_controller>(argc, argv, stream_cols, stream_rows);

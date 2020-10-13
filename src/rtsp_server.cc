@@ -85,12 +85,13 @@ void rtsp_server::initialize(int argc, char** argv, std::shared_ptr<cv::Mat> fra
   gst_rtsp_media_factory_set_launch(
       factory_,
       "( appsrc name=vrc_photo_streamer is-live=true format=GST_FORMAT_TIME ! videoconvert ! "
-      "x264enc "
-      "bitrate=16384 key-int-max=1 speed-preset=ultrafast ! "
-      // "bitrate=8192 key-int-max=1 speed-preset=ultrafast tune=zerolatency ! " //
-      // AVProVideoのLowLatencyModeだと表示バグる(遅延<1s)
-      // "bitrate=8192 key-int-max=1 speed-preset=ultrafast ! " // 遅延=1s
-      // "bitrate=2048 key-int-max=1 speed-preset=ultrafast tune=zerolatency ! "
+      // "x264enc bitrate=16384 key-int-max=1 speed-preset=ultrafast ! "
+      "x264enc bitrate=65536 key-int-max=1 speed-preset=ultrafast ! "
+      // "openh264enc bitrate=16384 ! "
+      // "openh264enc bitrate=32768 ! "
+      // "openh264enc bitrate=65536 ! "
+      // "openh264enc bitrate=16384 enable-denoise=true qp-max=20 complexity=high ! "
+      // "avenc_h264_omx bitrate=16384 ! h264parse ! "
       "video/x-h264,profile=baseline ! rtph264pay config-interval=1 name=pay0 pt=98 )");
 
   g_signal_connect(factory_, "media-configure", (GCallback)media_configure, nullptr);
