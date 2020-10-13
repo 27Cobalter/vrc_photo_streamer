@@ -40,6 +40,7 @@ void http_server::run() {
 
     ioc.run();
   } catch (std::exception const& e) {
+    std::cerr << "Can't open http server." << std::endl;
     throw e;
   }
 }
