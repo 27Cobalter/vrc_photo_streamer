@@ -118,7 +118,7 @@ void photo_album::put_meta_text(std::shared_ptr<cv::Mat> mat, meta_tool::meta_to
   std::vector<Magick::Drawable> draw_list;
 
   draw_list.push_back(Magick::DrawableFont("Noto-Sans-CJK-JP"));
-  draw_list.push_back(Magick::DrawableFillColor(Magick::ColorMono(false)));
+  draw_list.push_back(Magick::DrawableFillColor(Magick::ColorMono(true)));
   draw_list.push_back(Magick::DrawablePointSize(point_size));
 
   if (meta.date().has_value()) {
