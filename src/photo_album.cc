@@ -100,7 +100,9 @@ void photo_album::update(page_data format) {
                   resource_paths_.size() &&
               format.start == 0);
     };
-    if (conditional1() || conditional2()) {
+    if (image_buffer_[buffer_head_].page_start == format.start) {
+      // 1枚選択から戻したとき
+    } else if (conditional1() || conditional2()) {
       buffer_head_          = calc_buffer_pos(+1);
       page_data next_format = {format.start + static_cast<int>(std::pow(format.tiling, 2)),
                                format.tiling};
