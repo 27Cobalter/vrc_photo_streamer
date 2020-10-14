@@ -20,7 +20,7 @@ void rtsp_server::need_data(GstElement* appsrc, guint unused, context* ctx) {
   GstBuffer* buffer;
   GstFlowReturn ret;
 
-  buffer = gst_buffer_new_allocate(nullptr, size_, nullptr);
+  buffer                    = gst_buffer_new_allocate(nullptr, size_, nullptr);
   constexpr bool print_time = false;
   if (print_time) {
     cv::Mat image = frame_->clone();
@@ -31,9 +31,9 @@ void rtsp_server::need_data(GstElement* appsrc, guint unused, context* ctx) {
     // std::cout << std::ctime(&now) << std::endl;
 
     // imageのデータをgstのバッファに書き込む
-  gst_buffer_fill(buffer, 0, image.data, size_);
-  }else{
-  gst_buffer_fill(buffer, 0, frame_->data, size_);
+    gst_buffer_fill(buffer, 0, image.data, size_);
+  } else {
+    gst_buffer_fill(buffer, 0, frame_->data, size_);
   }
 
   GST_BUFFER_PTS(buffer)      = ctx->timestamp;

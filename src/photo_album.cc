@@ -4,6 +4,7 @@
 #include <cmath>
 #include <filesystem>
 #include <iostream>
+#include <limits>
 #include <memory>
 #include <mutex>
 #include <vector>
@@ -20,6 +21,8 @@ namespace vrc_photo_streamer::photo {
 photo_album::photo_album(int argc, char** argv, int output_cols, int output_rows)
     : output_cols_(output_cols), output_rows_(output_rows) {
   Magick::InitializeMagick(*argv);
+  find_images();
+  image_buffer_[buffer_head_].page_start = std::numeric_limits<int>::max();
 }
 
 int photo_album::find_images() {
@@ -44,13 +47,13 @@ int photo_album::find_images() {
 }
 
 void photo_album::update(page_data format) {
-  std::shared_ptr<cv::Mat> working =
-      std::make_shared<cv::Mat>(cv::Mat::zeros(output_rows_, output_cols_, CV_8UC3));
-  auto resource_it   = resource_paths_.rbegin();
-  auto interpolation = cv::INTER_AREA;
+  auto resource_it = resource_paths_.rbegin();
 
   for (int i = 0; i < format.start; i++) resource_it++;
-  auto func = [&](int i, auto resource_it) {
+  auto func = [this](int i, auto resource_it, std::shared_ptr<cv::Mat> working,
+                     page_data format, int ms = 0) {
+    std::this_thread::sleep_for(std::chrono::milliseconds(ms));
+    auto interpolation = cv::INTER_AREA;
     std::unique_ptr<cv::Mat> image;
     image        = std::make_unique<cv::Mat>(cv::imread(*resource_it));
     double scale = (static_cast<double>(output_rows_) / image->rows) / format.tiling;
@@ -83,18 +86,88 @@ void photo_album::update(page_data format) {
     image.reset();
   };
 
-  std::vector<std::thread> thread_group;
-  for (int i = 0; i < std::pow(format.tiling, 2) && resource_it != resource_paths_.rend();
-       i++, resource_it++) {
-    thread_group.push_back(std::thread(func, i, resource_it));
-  }
-  for (auto thread_it = thread_group.begin(); thread_it != thread_group.end(); thread_it++) {
-    thread_it->join();
-  }
+  if (format.tiling != 1) {
+    // 条件式長いので分割
+    // 0から末尾方向に行くとき以外で更新する値が大きいとき
+    auto conditional1 = [&]() {
+      return format.start >= image_buffer_[buffer_head_].page_start &&
+             !(format.start != static_cast<int>(std::pow(format.tiling, 2)) &&
+               image_buffer_[buffer_head_].page_start == 0);
+    };
+    // 末尾方向から0に行くとき
+    auto conditional2 = [&]() {
+      return (image_buffer_[buffer_head_].page_start + std::pow(format.tiling, 2) >
+                  resource_paths_.size() &&
+              format.start == 0);
+    };
+    if (conditional1() || conditional2()) {
+      buffer_head_          = calc_buffer_pos(+1);
+      page_data next_format = {format.start + static_cast<int>(std::pow(format.tiling, 2)),
+                               format.tiling};
+      if (next_format.start >= resource_paths_.size()) next_format.start = 0;
+      auto resource_it = std::make_shared<std::set<std::filesystem::path>::reverse_iterator>(
+          resource_paths_.rbegin());
+      for (int i = 0; i < next_format.start; i++) (*resource_it)++;
+      int next_head_                       = calc_buffer_pos(+1);
+      image_buffer_[next_head_].page_start = next_format.start;
+      image_buffer_[next_head_].image =
+          std::make_shared<cv::Mat>(cv::Mat::zeros(output_rows_, output_cols_, CV_8UC3));
+      boost::thread_group thread_group;
+      for (int i = 0; i < std::pow(format.tiling, 2) && *resource_it != resource_paths_.rend();
+           i++, (*resource_it)++) {
+        image_buffer_[next_head_].threads.create_thread(std::bind<void>(
+            func, i, *resource_it, image_buffer_[next_head_].image, next_format, 1500));
+      }
+    } else {
+      buffer_head_          = calc_buffer_pos(-1);
+      page_data next_format = {format.start - static_cast<int>(std::pow(format.tiling, 2)),
+                               format.tiling};
+      if (next_format.start < 0)
+        next_format.start =
+            std::trunc((resource_paths_.size() - 1) / std::pow(next_format.tiling, 2)) *
+            std::pow(next_format.tiling, 2);
+      auto resource_it = std::make_shared<std::set<std::filesystem::path>::reverse_iterator>(
+          resource_paths_.rbegin());
+      for (int i = 0; i < next_format.start; i++) (*resource_it)++;
+      int next_head_                       = calc_buffer_pos(-1);
+      image_buffer_[next_head_].page_start = next_format.start;
+      image_buffer_[next_head_].image =
+          std::make_shared<cv::Mat>(cv::Mat::zeros(output_rows_, output_cols_, CV_8UC3));
+      boost::thread_group thread_group;
+      for (int i = 0; i < std::pow(format.tiling, 2) && *resource_it != resource_paths_.rend();
+           i++, (*resource_it)++) {
+        image_buffer_[next_head_].threads.create_thread(std::bind<void>(
+            func, i, *resource_it, image_buffer_[next_head_].image, next_format, 1500));
+      }
+    }
+    if (image_buffer_[buffer_head_].page_start != format.start) {
+      std::cout << "buffer unhit" << std::endl;
+      image_buffer_[buffer_head_].page_start = format.start;
+      image_buffer_[buffer_head_].image =
+          std::make_shared<cv::Mat>(cv::Mat::zeros(output_rows_, output_cols_, CV_8UC3));
+      boost::thread_group thread_group;
+      for (int i = 0; i < std::pow(format.tiling, 2) && resource_it != resource_paths_.rend();
+           i++, resource_it++) {
+        image_buffer_[buffer_head_].threads.create_thread(
+            std::bind<void>(func, i, resource_it, image_buffer_[buffer_head_].image, format));
+      }
+    } else {
+      std::cout << "buffer hit" << std::endl;
+    }
+    image_buffer_[buffer_head_].threads.join_all();
 
-  std::lock_guard<std::mutex> lock(mutex_);
+    std::lock_guard<std::mutex> lock(mutex_);
 
-  *output_frame_ = working->clone();
+    *output_frame_ = image_buffer_[buffer_head_].image->clone();
+  } else {
+    auto image = std::make_shared<cv::Mat>(cv::Mat::zeros(output_rows_, output_cols_, CV_8UC3));
+    std::thread thread(std::bind<void>(func, 0, resource_it, image, format));
+    thread.join();
+
+    std::lock_guard<std::mutex> lock(mutex_);
+
+    *output_frame_ = image->clone();
+  }
 }
 
 std::shared_ptr<cv::Mat> photo_album::get_frame_ptr() {
@@ -140,5 +213,10 @@ void photo_album::put_meta_text(std::shared_ptr<cv::Mat> mat, meta_tool::meta_to
   image->draw(draw_list);
   image->write(0, 0, mat->cols, mat->rows, "BGR", Magick::CharPixel, mat->data);
   image.reset();
+}
+
+int photo_album::calc_buffer_pos(int delta) {
+  int tmp = (buffer_head_ + delta) % buffer_size_;
+  return tmp < 0 ? tmp + buffer_size_ : tmp;
 }
 } // namespace vrc_photo_streamer::photo
