@@ -92,7 +92,8 @@ void rtsp_server::initialize(int argc, char** argv, std::shared_ptr<cv::Mat> fra
       factory_,
       "( appsrc name=vrc_photo_streamer is-live=true format=GST_FORMAT_TIME ! videoconvert ! "
       // "x264enc bitrate=16384 key-int-max=1 speed-preset=ultrafast ! "
-      "x264enc bitrate=65536 key-int-max=1 speed-preset=ultrafast ! "
+      // "x264enc bitrate=65536 key-int-max=1 speed-preset=ultrafast ! "
+      "x264enc bitrate=32768 key-int-max=1 speed-preset=ultrafast ! "
       // "openh264enc bitrate=16384 ! "
       // "openh264enc bitrate=32768 ! "
       // "openh264enc bitrate=65536 ! "
