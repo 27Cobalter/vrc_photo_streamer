@@ -30,6 +30,7 @@ int photo_album::find_images() {
     throw std::runtime_error(std::string(resources_dir_) + " is not directory.");
   }
 
+  join_all();
   resource_paths_.clear();
 
   for (const filesystem::directory_entry& x : filesystem::directory_iterator(resources_dir_)) {
@@ -220,5 +221,10 @@ void photo_album::put_meta_text(std::shared_ptr<cv::Mat> mat, meta_tool::meta_to
 int photo_album::calc_buffer_pos(int delta) {
   int tmp = (buffer_head_ + delta) % buffer_size_;
   return tmp < 0 ? tmp + buffer_size_ : tmp;
+}
+void photo_album::join_all() {
+  for (int i = 0; i < buffer_size_; i++) {
+    image_buffer_[i].threads.join_all();
+  }
 }
 } // namespace vrc_photo_streamer::photo

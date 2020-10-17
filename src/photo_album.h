@@ -35,6 +35,7 @@ public:
   int find_images();
   void update(page_data format);
   std::shared_ptr<cv::Mat> get_frame_ptr();
+  void join_all();
 
 private:
   void put_meta_text(std::shared_ptr<cv::Mat> mat, meta_tool::meta_tool& meta);
