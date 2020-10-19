@@ -22,7 +22,8 @@ photo_album::photo_album(int argc, char** argv, int output_cols, int output_rows
     : output_cols_(output_cols), output_rows_(output_rows) {
   Magick::InitializeMagick(*argv);
   find_images();
-  image_buffer_[buffer_head_].page_start = std::numeric_limits<int>::max();
+  for (int i = 0; i < buffer_size_; i++)
+    image_buffer_[i].page_start = std::numeric_limits<int>::max();
 }
 
 int photo_album::find_images() {
